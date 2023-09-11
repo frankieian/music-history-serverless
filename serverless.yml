@@ -1,0 +1,22 @@
+service: music-history-lambda
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+  - serverless-plugin-typescript
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  timeout: 15
+
+functions:
+  scheduler:
+    handler: scheduler/handler.schedulerHandler
+    events:
+      - http:
+          private: true
+          path: test
+          method: post
