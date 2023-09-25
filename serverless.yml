@@ -18,5 +18,12 @@ functions:
     events:
       - http:
           private: true
-          path: test
+          path: scheduler
+          method: post
+  music_history:
+    handler: music_history/handler.musicHistoryHandler
+    events:
+      - http:
+          private: true
+          path: music_history
           method: post

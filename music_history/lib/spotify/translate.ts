@@ -1,0 +1,1 @@
+//Translates the data into specific format
