@@ -5,7 +5,8 @@ import { recentlyPlayedRequest, recentlyPlayedResponse, recentlyPlayedResponseSc
 //All functions that pertain to getting recently played tracks
 
 
-export const getRecentlyPlayedTracks = async (authToken: string, request?: recentlyPlayedRequest) => {
+export const getRecentlyPlayedTracks = async (authToken: string, request?: recentlyPlayedRequest)
+    :Promise<{success: true, data: recentlyPlayedResponse} | {success: false, error: any}> => {
     try {
         let response: AxiosResponse<recentlyPlayedResponse> = await axios.request({
             method: "GET",

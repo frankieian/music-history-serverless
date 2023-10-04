@@ -1,21 +1,31 @@
+import { createDbConnection } from "../config/db"
+import { musicMessageBody, translateData } from "../types/generic"
+import { addMusicHistory } from "./db/add"
+import { obtainIntegration } from "./db/get"
 import { createAuthorization, refreshAuthToken } from "./spotify/auth"
 import { getRecentlyPlayedTracks } from "./spotify/history"
+import { spotifyHistoryRunner } from "./spotify/runner"
 
 
 
-export const musicRunner = async (body: any) => {
-    console.log('Running music runner!')
-    const refreshTok = process.env.SPOTIFY_TEST_REFRESH ?? ""
-    let refresh_token = await refreshAuthToken(refreshTok)
+export const musicRunner = async (body: musicMessageBody) => {
+    const sqlConnection = await createDbConnection()
+    const integration = await obtainIntegration(sqlConnection, body.provider, body.user_id)
 
-    if(!refresh_token.success) {
-        console.log("FAILED REFRESH")
-        return
+    if(!integration.data) {
+        throw new Error(`Integration not found or data couldnt be obtained`)
     }
-    const authToken = createAuthorization(refresh_token.data)
 
-    const recentlyPlayed = await getRecentlyPlayedTracks(authToken)
+    let translatedData: translateData[]
+    switch (body.provider) {
+        case "spotify":
+            translatedData = await spotifyHistoryRunner(integration.data?.refresh_token, sqlConnection)
+            break;
+        default:
+            throw new Error(`Invalid provider, ${body.provider} is not valid and compatible`)
+    }
+    
+    await addMusicHistory(sqlConnection, translatedData, body.user_id)
 
 
-    console.log(recentlyPlayed)
 }

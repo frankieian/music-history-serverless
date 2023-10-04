@@ -15,3 +15,10 @@ export const spotifySettings = {
 }
 
 export const recentlyPlayedLimit = 50
+
+
+export const tableName = {
+    artist: 'artist',
+    song: 'song'
+}
+
