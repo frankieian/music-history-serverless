@@ -25,6 +25,7 @@ export const addMusicHistory = async (sqlConnection: Connection,translatedData: 
 
 }
 
+//Adds song into db
 export const addSong = async (sqlConnection: Connection, songData: songTranslate) => {
     const song = songData.song
     const songSpotifyId = song.spotify_id
