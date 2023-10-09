@@ -3,7 +3,6 @@ service: music-history-lambda
 frameworkVersion: "3"
 
 plugins:
-  - serverless-offline-ssm
   - serverless-dotenv-plugin
   - serverless-offline
   - serverless-plugin-typescript
@@ -39,10 +38,8 @@ functions:
   scheduler:
     handler: scheduler/handler.schedulerHandler
     events:
-      - http:
-          private: true
-          path: scheduler
-          method: post
+      - eventBridge:
+          schedule: rate(1 hours)
   music_history:
     handler: music_history/handler.musicHistoryHandler
     events:
