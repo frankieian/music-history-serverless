@@ -10,7 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schedulerHandler = void 0;
+const adapter_1 = require("./lib/adapter");
 const schedulerHandler = (event) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Example!");
+    try {
+        console.log("Scheduler runned!");
+        yield (0, adapter_1.schedulerAdapter)();
+    }
+    catch (err) {
+        console.log(err);
+        throw new Error('Message could not be completely processed');
+    }
 });
 exports.schedulerHandler = schedulerHandler;

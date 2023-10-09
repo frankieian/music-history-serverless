@@ -1,6 +1,13 @@
-import { SQSEvent } from "aws-lambda";
+import { EventBridgeEvent } from "aws-lambda";
+import { schedulerAdapter } from "./lib/adapter";
 
+export const schedulerHandler = async (event: EventBridgeEvent<any, any>) => {
+    try {
+        console.log("Scheduler runned!")
 
-export const schedulerHandler = async (event: SQSEvent) => {
-    console.log("Example!")
+        await schedulerAdapter()
+    } catch (err) {
+        console.log(err)
+        throw new Error('Message could not be completely processed')
+    }
 }

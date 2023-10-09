@@ -12,7 +12,6 @@ export const addMusicHistory = async (sqlConnection: Connection,translatedData: 
 
         //Add music history record
         let record:musicHistoryRecord = {
-            //id: uuid(),
             user_id,
             song_id: data.song.spotify_id,
             played_at: new Date(data.played_at)
@@ -30,29 +29,14 @@ export const addSong = async (sqlConnection: Connection, songData: songTranslate
     const song = songData.song
     const songSpotifyId = song.spotify_id
     const artists = songData.artists
-    const allArtistSpotifyId = artists.map(o => o.artist.spotify_id)
 
     await sqlConnection.execute(
         'INSERT IGNORE INTO `song` VALUES(?, ?, ?)',
         [songSpotifyId, song.name, song.duration]
     )
-    //Find if spotify_id matches in table
-    //let matchingEID = await obtainSong(sqlConnection, songSpotifyId)
-//
-    ////If match then the song already exists
-    //if(!matchingEID.success) {
-    //    await sqlConnection.execute(
-    //        'INSERT INTO `song` VALUES(?, ?, ?)',
-    //        [songSpotifyId, song.name, song.duration]
-    //    )
-    //    //Add artist song data
-    //    //await addArtistSong(sqlConnection, songSpotifyId, allArtistSpotifyId)
-    //}
 
-    //Add artist (if not dup)
+    //Add artist
     await addArtists(sqlConnection, artists)
-
-
 }
 
 export const addArtists = async (sqlConnection: Connection, artistData: artistData[]) => {
@@ -62,17 +46,6 @@ export const addArtists = async (sqlConnection: Connection, artistData: artistDa
         'INSERT IGNORE INTO `artist` VALUES (?)',
         artists
     )
-    //Find if externalId matches in external_ids table
-    //let matchingEID = await obtainArtist(sqlConnection, artistSpotifyId)
-
-    //If no match, add song with spotify ID
-    //if(!matchingEID.success) {
-    //    await sqlConnection.execute(
-    //        'INSERT INSERT IGNORE  `artist` VALUES(?, ?)',
-    //        [artistSpotifyId, artist.name]
-    //    )
-    //}
-
 }
 
 export const addArtistSong = async (sqlConnection: Connection, songSpotifyId:string, artistSpotifyIds: string[]) => {
@@ -84,5 +57,4 @@ export const addArtistSong = async (sqlConnection: Connection, songSpotifyId:str
         )
 
     }
-
 }
