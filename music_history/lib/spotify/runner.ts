@@ -3,9 +3,10 @@ import { createAuthorization, refreshAuthToken } from "./auth"
 import { getRecentlyPlayedTracks } from "./history"
 import { translateSpotifyHistory } from "./translate"
 import { recentlyPlayedRequest } from "../../types/spotify"
+import { integration } from "../../types/db"
 
 
-export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection: Connection, last_used: Date | null) => {
+export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection: Connection, integration: integration) => {
     console.log('Running spotifyHistoryRunner')
     //Get auth token using refresh token
     let authResponse = await refreshAuthToken(refresh_token)
@@ -21,7 +22,7 @@ export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection:
     //Retrieve latest played token
     //If last_used is in db, then used that as after time.
     let options:recentlyPlayedRequest = {}
-    if(last_used) options.after = last_used.valueOf()
+    if(integration.last_used) options.after = integration.last_used.valueOf()
 
     const recentlyPlayed = await getRecentlyPlayedTracks(authToken, options)
     console.log('Retrieved recentlyPlayed', recentlyPlayed)
@@ -31,7 +32,6 @@ export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection:
     }
     //Translate data
     const translatedRecentlyPlayed = translateSpotifyHistory(recentlyPlayed.data)
-
 
     //return data
     return translatedRecentlyPlayed 
