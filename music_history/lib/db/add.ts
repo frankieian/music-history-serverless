@@ -5,6 +5,7 @@ import { tableName } from "../../const/spotify";
 import {v4 as uuid} from "uuid"
 
 export const addMusicHistory = async (sqlConnection: Connection,translatedData: translateData[], user_id: number) => {
+    let lastPlayed: Date | null = null
     for(let i = 0; i <translatedData.length; i++) {
         let data = translatedData[i]
         //Add song data
@@ -17,11 +18,17 @@ export const addMusicHistory = async (sqlConnection: Connection,translatedData: 
             played_at: new Date(data.played_at)
         }
 
+        if(!lastPlayed) lastPlayed = record.played_at
+        else if(record.played_at > lastPlayed) lastPlayed = record.played_at
+
+
         await sqlConnection.execute(
             'INSERT IGNORE INTO `history` VALUES(?, ?, ?)',
             [record.user_id, record.song_id, record.played_at]
         )
     }
+
+    return lastPlayed
 
 }
 
