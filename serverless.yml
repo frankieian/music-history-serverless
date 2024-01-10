@@ -39,9 +39,7 @@ functions:
   scheduler:
     handler: scheduler/handler.schedulerHandler
     events:
-      - schedule: 
-        rate: rate(1 hour)
-        enabled: true
+      - schedule: rate(1 hour)
   music_history:
     handler: music_history/handler.musicHistoryHandler
     events:
