@@ -12,6 +12,8 @@ export const schedulerAdapter = async() => {
 
     if(!allUsers.success || !allUsers.data) throw new Error("Could not get users")
 
+    console.log('all users are', allUsers.data)
+
     let translation = translateIntegrations(allUsers.data)
 
     console.log('translation', translation)

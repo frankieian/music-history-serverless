@@ -36,10 +36,10 @@ provider:
     MUSIC_HISTORY_SQS_URL: ${param:MUSIC_HISTORY_SQS_URL}
 
 functions:
-  #scheduler:
-  #  handler: scheduler/handler.schedulerHandler
-  #  events:
-  #    - schedule: rate(1 hours)
+  scheduler:
+    handler: scheduler/handler.schedulerHandler
+    events:
+      - schedule: rate(1 hours)
   music_history:
     handler: music_history/handler.musicHistoryHandler
     events:

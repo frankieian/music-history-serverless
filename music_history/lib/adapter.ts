@@ -26,8 +26,11 @@ export const musicRunner = async (body: musicMessageBody) => {
             throw new Error(`Invalid provider, ${body.provider} is not valid and compatible`)
     }
     
+    console.log('Using translated data', translatedData)
+
     let lastPlayed = await addMusicHistory(sqlConnection, translatedData, body.user_id)
 
+    console.log('The last played time was', lastPlayed)
     //Update last played
     await updateLastUsed(sqlConnection, integration.data, lastPlayed)
 
