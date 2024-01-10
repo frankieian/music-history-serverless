@@ -2,9 +2,10 @@ import { Connection } from "mysql2/promise"
 import { createAuthorization, refreshAuthToken } from "./auth"
 import { getRecentlyPlayedTracks } from "./history"
 import { translateSpotifyHistory } from "./translate"
+import { recentlyPlayedRequest } from "../../types/spotify"
 
 
-export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection: Connection) => {
+export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection: Connection, last_used: Date | null) => {
     console.log('Running spotifyHistoryRunner')
     //Get auth token using refresh token
     let authResponse = await refreshAuthToken(refresh_token)
@@ -18,7 +19,11 @@ export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection:
     console.log('Retrieved token', authToken)
 
     //Retrieve latest played token
-    const recentlyPlayed = await getRecentlyPlayedTracks(authToken)
+    //If last_used is in db, then used that as after time.
+    let options:recentlyPlayedRequest = {}
+    if(last_used) options.after = last_used.valueOf()
+
+    const recentlyPlayed = await getRecentlyPlayedTracks(authToken, options)
     console.log('Retrieved recentlyPlayed', recentlyPlayed)
 
     if(!recentlyPlayed.success) {

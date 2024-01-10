@@ -19,7 +19,7 @@ export const musicRunner = async (body: musicMessageBody) => {
     let translatedData: translateData[]
     switch (body.provider) {
         case "spotify":
-            translatedData = await spotifyHistoryRunner(integration.data?.refresh_token, sqlConnection)
+            translatedData = await spotifyHistoryRunner(integration.data?.refresh_token, sqlConnection, integration.data?.last_used)
             break;
         default:
             throw new Error(`Invalid provider, ${body.provider} is not valid and compatible`)
