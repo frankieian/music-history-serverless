@@ -121,7 +121,7 @@ export const recentlyPlayedResponseSchema = z.object({
     cursors: z.object({
         after: z.string(),
         before: z.string()
-    }),
+    }).nullable(),
     total: z.optional(z.number().nullable()),
     items: z.array(playHistorySchema)
 })
