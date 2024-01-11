@@ -43,4 +43,7 @@ functions:
   music_history:
     handler: music_history/handler.musicHistoryHandler
     events:
-      - sqs: arn:aws:sqs:ap-southeast-2:917050543183:MusicHistory.fifo
+      - sqs: 
+          arn: arn:aws:sqs:ap-southeast-2:917050543183:MusicHistory.fifo
+          batchSize: 1
+
