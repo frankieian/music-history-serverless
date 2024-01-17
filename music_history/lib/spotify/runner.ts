@@ -4,9 +4,11 @@ import { getRecentlyPlayedTracks } from "./history"
 import { translateSpotifyHistory } from "./translate"
 import { recentlyPlayedRequest } from "../../types/spotify"
 import { integration } from "../../types/db"
+import { recentlyPlayedLimit } from "../../const/spotify"
+import * as _ from "lodash"
+import { musicMessageBody } from "../../types/generic"
 
-
-export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection: Connection, integration: integration) => {
+export const spotifyHistoryRunner = async (body: musicMessageBody, refresh_token: string, sqlConnection: Connection, integration: integration) => {
     console.log('Running spotifyHistoryRunner')
     //Get auth token using refresh token
     let authResponse = await refreshAuthToken(refresh_token)
@@ -22,7 +24,10 @@ export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection:
     //Retrieve latest played token
     //If last_used is in db, then used that as after time.
     let options:recentlyPlayedRequest = {}
-    if(integration.last_used) options.after = integration.last_used.valueOf()
+    //If body.after has number, use that
+    if(body.after) options.after = body.after
+    //Otherwise use integration.last_used
+    else if(integration.last_used) options.after = integration.last_used.valueOf()
 
     const recentlyPlayed = await getRecentlyPlayedTracks(authToken, options)
     console.log('Retrieved recentlyPlayed', recentlyPlayed)
@@ -30,10 +35,34 @@ export const spotifyHistoryRunner = async (refresh_token: string, sqlConnection:
     if(!recentlyPlayed.success) {
         throw new Error("Could not obtain recently played")
     }
+
+    let message: musicMessageBody = {
+        provider: integration.provider,
+        user_id: integration.user_id
+    }
+    let hasMessage = false
+
+    //Check if required to run previous recently played
+    if(recentlyPlayed.data.items.length === recentlyPlayedLimit) {
+        //Check if after valid number
+        let after = _.toInteger(recentlyPlayed.data.cursors?.after)
+        if(after > 0) {
+            hasMessage = true
+            message = {
+                provider: integration.provider,
+                user_id: integration.user_id,
+                after: after
+            }
+        }
+    }
+
     //Translate data
     const translatedRecentlyPlayed = translateSpotifyHistory(recentlyPlayed.data)
 
     //return data
-    return translatedRecentlyPlayed 
+    return {
+        translatedData: translatedRecentlyPlayed,
+        ...(hasMessage ? {message: message} : {})
+    } 
 
 }

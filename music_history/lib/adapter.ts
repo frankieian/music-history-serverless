@@ -1,10 +1,9 @@
 import { createDbConnection } from "../config/db"
 import { musicMessageBody, translateData } from "../types/generic"
+import { sendSQSMessage } from "./aws/sqs"
 import { addMusicHistory } from "./db/add"
 import { obtainIntegration } from "./db/get"
 import { updateLastUsed } from "./db/update"
-import { createAuthorization, refreshAuthToken } from "./spotify/auth"
-import { getRecentlyPlayedTracks } from "./spotify/history"
 import { spotifyHistoryRunner } from "./spotify/runner"
 
 
@@ -17,22 +16,28 @@ export const musicRunner = async (body: musicMessageBody) => {
         throw new Error(`Integration not found or data couldnt be obtained`)
     }
 
-    let translatedData: translateData[]
+    let data: {translatedData: translateData[], message?: musicMessageBody}
     switch (body.provider) {
         case "spotify":
-            translatedData = await spotifyHistoryRunner(integration.data?.refresh_token, sqlConnection, integration.data)
+            data = await spotifyHistoryRunner(body, integration.data?.refresh_token, sqlConnection, integration.data)
             break;
         default:
             throw new Error(`Invalid provider, ${body.provider} is not valid and compatible`)
     }
     
-    console.log('Using translated data', translatedData)
+    console.log('Using translated data', data)
 
-    let lastPlayed = await addMusicHistory(sqlConnection, translatedData, body.user_id)
+    let lastPlayed = await addMusicHistory(sqlConnection, data.translatedData, body.user_id)
 
     console.log('The last played time was', lastPlayed)
     //Update last played
     await updateLastUsed(sqlConnection, integration.data, lastPlayed)
+
+    //If message
+    if(data.message) {
+        console.log("sending message with body", data.message)
+        await sendSQSMessage([data.message])
+    }
 
 
 }
