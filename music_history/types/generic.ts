@@ -3,7 +3,8 @@
 
 export type musicMessageBody = {
     provider: string,
-    user_id: number
+    user_id: number,
+    after?: number//use as the spotify after filter instead if this exists 
 }
 
 export type musicHistoryRecord = {
