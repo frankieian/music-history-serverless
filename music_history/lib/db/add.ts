@@ -43,8 +43,13 @@ export const addSong = async (sqlConnection: Connection, songData: songTranslate
         [songSpotifyId, song.name, song.duration]
     )
 
+    
     //Add artist
     await addArtists(sqlConnection, artists)
+
+    //Add artist song
+    let artistIds =  artists.map(({artist} )=> artist.spotify_id)
+    await addArtistSong(sqlConnection, songSpotifyId, artistIds)
 }
 
 export const addArtists = async (sqlConnection: Connection, artistData: artistData[]) => {
