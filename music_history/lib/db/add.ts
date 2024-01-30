@@ -66,7 +66,7 @@ export const addArtistSong = async (sqlConnection: Connection, songSpotifyId:str
         let artist = artistSpotifyIds[i]
         await sqlConnection.execute(
             'INSERT IGNORE INTO `artist_song` VALUES(?, ?)',
-            [songSpotifyId, artist]
+            [artist, songSpotifyId]
         )
 
     }
