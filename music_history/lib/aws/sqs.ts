@@ -9,7 +9,7 @@ export const sendSQSMessage = async (bodies: musicMessageBody[]) => {
             secretAccessKey: process.env.SQS_SECRET_KEY as string
         }
     });
-
+    
     for(let i = 0; i< bodies.length; i++){
 
         let body = bodies[i]
