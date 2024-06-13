@@ -7,23 +7,43 @@ plugins:
   - serverless-offline
   - serverless-plugin-typescript
 
+params:
+  dev:
+    SPOTIFY_CLIENT_ID: ${ssm:SPOTIFY_CLIENT_ID-DEV}
+    SPOTIFY_CLIENT_SECRET: ${ssm:SPOTIFY_CLIENT_SECRET-DEV}
+    SPOTIFY_AUTH_URL: ${ssm:SPOTIFY_AUTH_URL}
+    SPOTIFY_API_URL: ${ssm:SPOTIFY_API_URL}
+    DATABASE_URL: ${ssm:DATABASE_URL-DEV}
+    SQS_REGION: ${ssm:SQS_REGION-DEV}
+    SQS_ACCESS_KEY: ${ssm:SQS_ACCESS_KEY-DEV}
+    SQS_SECRET_KEY: ${ssm:SQS_SECRET_KEY-DEV}
+    MUSIC_HISTORY_SQS_URL: ${ssm:MUSIC_HISTORY_SQS_URL-DEV}
+
 provider:
   name: aws
+  region: ap-southeast-2
   runtime: nodejs18.x
-  timeout: 15
+  timeout: 20
+  environment:
+    SPOTIFY_CLIENT_ID: ${param:SPOTIFY_CLIENT_ID}
+    SPOTIFY_CLIENT_SECRET: ${param:SPOTIFY_CLIENT_SECRET}
+    SPOTIFY_AUTH_URL: ${param:SPOTIFY_AUTH_URL}
+    SPOTIFY_API_URL: ${param:SPOTIFY_API_URL}
+    DATABASE_URL: ${param:DATABASE_URL}
+    SQS_REGION: ${param:SQS_REGION}
+    SQS_ACCESS_KEY: ${param:SQS_ACCESS_KEY}
+    SQS_SECRET_KEY: ${param:SQS_SECRET_KEY}
+    MUSIC_HISTORY_SQS_URL: ${param:MUSIC_HISTORY_SQS_URL}
 
 functions:
   scheduler:
     handler: scheduler/handler.schedulerHandler
     events:
-      - http:
-          private: true
-          path: scheduler
-          method: post
+      - schedule: rate(1 hour)
   music_history:
     handler: music_history/handler.musicHistoryHandler
     events:
-      - http:
-          private: true
-          path: music_history
-          method: post
+      - sqs: 
+          arn: arn:aws:sqs:ap-southeast-2:917050543183:MusicHistory.fifo
+          batchSize: 1
+

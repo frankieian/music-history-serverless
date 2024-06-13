@@ -5,6 +5,7 @@ import { tableName } from "../../const/spotify";
 import {v4 as uuid} from "uuid"
 
 export const addMusicHistory = async (sqlConnection: Connection,translatedData: translateData[], user_id: number) => {
+    let lastPlayed: Date | null = null
     for(let i = 0; i <translatedData.length; i++) {
         let data = translatedData[i]
         //Add song data
@@ -12,11 +13,14 @@ export const addMusicHistory = async (sqlConnection: Connection,translatedData: 
 
         //Add music history record
         let record:musicHistoryRecord = {
-            //id: uuid(),
             user_id,
             song_id: data.song.spotify_id,
             played_at: new Date(data.played_at)
         }
+
+        if(!lastPlayed) lastPlayed = record.played_at
+        else if(record.played_at > lastPlayed) lastPlayed = record.played_at
+
 
         await sqlConnection.execute(
             'INSERT IGNORE INTO `history` VALUES(?, ?, ?)',
@@ -24,35 +28,28 @@ export const addMusicHistory = async (sqlConnection: Connection,translatedData: 
         )
     }
 
+    return lastPlayed
+
 }
 
+//Adds song into db
 export const addSong = async (sqlConnection: Connection, songData: songTranslate) => {
     const song = songData.song
     const songSpotifyId = song.spotify_id
     const artists = songData.artists
-    const allArtistSpotifyId = artists.map(o => o.artist.spotify_id)
 
     await sqlConnection.execute(
         'INSERT IGNORE INTO `song` VALUES(?, ?, ?)',
         [songSpotifyId, song.name, song.duration]
     )
-    //Find if spotify_id matches in table
-    //let matchingEID = await obtainSong(sqlConnection, songSpotifyId)
-//
-    ////If match then the song already exists
-    //if(!matchingEID.success) {
-    //    await sqlConnection.execute(
-    //        'INSERT INTO `song` VALUES(?, ?, ?)',
-    //        [songSpotifyId, song.name, song.duration]
-    //    )
-    //    //Add artist song data
-    //    //await addArtistSong(sqlConnection, songSpotifyId, allArtistSpotifyId)
-    //}
 
-    //Add artist (if not dup)
+    
+    //Add artist
     await addArtists(sqlConnection, artists)
 
-
+    //Add artist song
+    let artistIds =  artists.map(({artist} )=> artist.spotify_id)
+    await addArtistSong(sqlConnection, songSpotifyId, artistIds)
 }
 
 export const addArtists = async (sqlConnection: Connection, artistData: artistData[]) => {
@@ -62,27 +59,15 @@ export const addArtists = async (sqlConnection: Connection, artistData: artistDa
         'INSERT IGNORE INTO `artist` VALUES (?)',
         artists
     )
-    //Find if externalId matches in external_ids table
-    //let matchingEID = await obtainArtist(sqlConnection, artistSpotifyId)
-
-    //If no match, add song with spotify ID
-    //if(!matchingEID.success) {
-    //    await sqlConnection.execute(
-    //        'INSERT INSERT IGNORE  `artist` VALUES(?, ?)',
-    //        [artistSpotifyId, artist.name]
-    //    )
-    //}
-
 }
 
 export const addArtistSong = async (sqlConnection: Connection, songSpotifyId:string, artistSpotifyIds: string[]) => {
     for(let i = 0; i < artistSpotifyIds.length; i++) {
         let artist = artistSpotifyIds[i]
         await sqlConnection.execute(
-            'INSERT INTO `artist_song` VALUES(?, ?)',
-            [songSpotifyId, artist]
+            'INSERT IGNORE INTO `artist_song` VALUES(?, ?)',
+            [artist, songSpotifyId]
         )
 
     }
-
 }

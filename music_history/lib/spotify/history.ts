@@ -4,7 +4,12 @@ import { recentlyPlayedRequest, recentlyPlayedResponse, recentlyPlayedResponseSc
 
 //All functions that pertain to getting recently played tracks
 
-
+/**
+ * Ability to get the recently played tracks on spotify
+ * @param authToken Auth token for spotify API authorization
+ * @param request Options for request, e.g. custom limit, etc
+ * @returns 
+ */
 export const getRecentlyPlayedTracks = async (authToken: string, request?: recentlyPlayedRequest)
     :Promise<{success: true, data: recentlyPlayedResponse} | {success: false, error: any}> => {
     try {

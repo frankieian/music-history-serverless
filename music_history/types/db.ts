@@ -7,7 +7,8 @@ export type integration = {
     user_id: number,
     refresh_token: string,
     status: string,
-    created_at: Date
+    created_at: Date,
+    last_used: Date | null
 }
 
 export type songDoc = {
